@@ -190,9 +190,9 @@
             h.setMinutes(h.getMinutes() + timezoneOffset);
             let dia = d.getDay().toString() + " " + d.getDate().toString() 
             + "/" + d.getMonth().toString() + "/" + d.getFullYear().toString();
+
             mensajes.forEach(mensaje => {
-                let dia_actual = mensaje.dfecha.getDay().toString() + " " + dfecha.getDate().toString() 
-            + "/" + dfecha.getMonth().toString() + "/" + dfecha.getFullYear().toString();
+                let dia_actual = mensaje.dfecha.getDay().toString() + " " + mensaje.dfecha.getDate().toString() + "/" + mensaje.dfecha.getMonth().toString() + "/" + mensaje.dfecha.getFullYear().toString();
                 if (dia !== dia_actual){
                     let globito = document.createElement('div');
                     globito.innerHTML = dia_actual;
