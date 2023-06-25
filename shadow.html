@@ -201,16 +201,16 @@
             h.setMinutes(h.getMinutes() + timezoneOffset);
             let dia = dias_semana[d.getDay()] + " " + d.getDate().toString() 
             + "/" + (d.getMonth()+1).toString() + "/" + d.getFullYear().toString();
-
+            let primero = true;
             mensajes.forEach(mensaje => {
                 let dia_actual = dias_semana[mensaje.dfecha.getDay()] + " " + mensaje.dfecha.getDate().toString() + "/" + (mensaje.dfecha.getMonth()+1).toString() + "/" + mensaje.dfecha.getFullYear().toString();
-                if (dia !== dia_actual){
+                if (dia !== dia_actual || primero){
                     let globito = document.createElement('div');
                     globito.innerHTML = dia_actual;
                     globito.setAttribute('class', 'globito');
                     conversacion.appendChild(globito);
-
                     dia = dia_actual;
+                    primero = false;
                 }
                 let globo = document.createElement('div');
                 let metadato = document.createElement('h6');
