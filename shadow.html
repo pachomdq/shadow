@@ -70,7 +70,7 @@
         <div id="contenedor" style="width: 80%;padding: 10px;border-style: solid;border-radius: 20px;background-color: #00000073;"></div>
     </div>
     <script>
-    
+        const dias_semana = ['Domingo', 'Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado'];
         let mensajes = [];
         let usuarios = {};
         let conversacion = document.getElementById('contenedor');
@@ -188,11 +188,11 @@
             let timezoneOffset = d.getTimezoneOffset();
             d.setMinutes(d.getMinutes() + timezoneOffset);
             h.setMinutes(h.getMinutes() + timezoneOffset);
-            let dia = d.getDay().toString() + " " + d.getDate().toString() 
+            let dia = dias_semana(d.getDay()) + " " + d.getDate().toString() 
             + "/" + d.getMonth().toString() + "/" + d.getFullYear().toString();
 
             mensajes.forEach(mensaje => {
-                let dia_actual = mensaje.dfecha.getDay().toString() + " " + mensaje.dfecha.getDate().toString() + "/" + mensaje.dfecha.getMonth().toString() + "/" + mensaje.dfecha.getFullYear().toString();
+                let dia_actual = dias_semana(mensaje.dfecha.getDay()) + " " + mensaje.dfecha.getDate().toString() + "/" + mensaje.dfecha.getMonth().toString() + "/" + mensaje.dfecha.getFullYear().toString();
                 if (dia !== dia_actual){
                     let globito = document.createElement('div');
                     globito.innerHTML = dia_actual;
