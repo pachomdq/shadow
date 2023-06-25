@@ -47,7 +47,7 @@
         <h2>Shadow v1.0</h2>
         <input type="file" id="archivoTexto" accept=".txt">
         <br>
-        <span id="hash" class="hash" onclick="cambiaHash()"></span><br>
+        <span id="hash" class="hash" onclick="cambiaHash()" style="display:none"></span><br>
         Mostrar mensajes<br>
         Desde: <input type="datetime-local" id="desde" onchange="mostrarConversacion()"><br>
         Hasta: <input type="datetime-local" id="hasta" onchange="mostrarConversacion()"><br> 
@@ -96,10 +96,12 @@
         });
         let indice = 0;
         function cambiaHash(){
+            let globo = document.getElementById('hash');
             indice++;
             indice = indice % checksums.length;
             let tipo = checksums[indice];
-            document.getElementById('hash').innerHTML = tipo + ' Hash: <strong>' + hash[tipo]+'</strong><br>';
+            globo.style.display = 'block';
+            globo.innerHTML = tipo + ' Hash: <strong>' + hash[tipo]+'</strong><br>';
             
         }
 
