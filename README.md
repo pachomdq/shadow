@@ -2,7 +2,7 @@
 Used to blur part of a conversation downloaded from whatsapp
 
 ## Usage
-Go to https://pachomdq.github.io/shadow/shadow.html
+Go to [https://pachomdq.github.io/shadow/shadow.html]
 You can import a chat text from whatsapp app and define a range of time. Then you can choose who is the owner of the chat so the conversation can be formatted correctly.
 
 ## Security
