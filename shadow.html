@@ -264,6 +264,7 @@
                     let imageSrc = imageDictionary[imageName];
                     if (imageSrc) {
                         let img = document.createElement('img');
+                        img.style.width = 'inherit';
                         img.src = imageSrc;
                         globo.appendChild(img);
                     }
@@ -280,12 +281,24 @@
         }
 
         function toggleBlur(element) {
-            if (element.style.filter === 'blur(30px)') {
-                if (window.confirm("Esta seguro que desea ver este mensaje?")){
-                    element.style.filter = 'blur(0px)';
+            const isImage = element.querySelector('img') !== null;
+
+            if (isImage) {
+                if (element.style.filter === 'blur(20px)') {
+                    if (window.confirm("¿Estás seguro de que deseas ver esta imagen?")) {
+                        element.style.filter = 'blur(0px)';
+                    }
+                } else {
+                    element.style.filter = 'blur(20px)';
                 }
             } else {
-                element.style.filter = 'blur(3px)';
+                if (element.style.filter === 'blur(3px)') {
+                    if (window.confirm("¿Estás seguro de que deseas ver este mensaje de texto?")) {
+                        element.style.filter = 'blur(0px)';
+                    }
+                } else {
+                    element.style.filter = 'blur(3px)';
+                }
             }
         }
 
