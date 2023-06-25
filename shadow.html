@@ -38,6 +38,12 @@
             padding: 20px;
             border-radius: 20px;
         }
+        .principal{
+            display:flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
     </style>
 </head>
 
@@ -57,8 +63,9 @@
                 <option value="" disabled selected>Elija un usuario</option>
             </select>
     </div>
-    <div id="contenedor"></div>
-
+    <div class="principal">
+        <div id="contenedor"></div>
+    </div>
     <script>
     
         let mensajes = [];
