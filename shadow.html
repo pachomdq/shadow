@@ -45,6 +45,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            margin-top: 20px;
         }
         .globito {
             justify-content: center;
@@ -284,12 +285,12 @@
             const isImage = element.querySelector('img') !== null;
 
             if (isImage) {
-                if (element.style.filter === 'blur(20px)') {
+                if (element.style.filter === 'blur(25px)') {
                     if (window.confirm("¿Estás seguro de que deseas ver esta imagen?")) {
                         element.style.filter = 'blur(0px)';
                     }
                 } else {
-                    element.style.filter = 'blur(20px)';
+                    element.style.filter = 'blur(25px)';
                 }
             } else {
                 if (element.style.filter === 'blur(5px)') {
