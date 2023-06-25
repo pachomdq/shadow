@@ -64,7 +64,12 @@
 <script src="crypto-js.js"></script>
     <div class="cabecera">
         <h2>Shadow v1.0</h2>
+        <label for="archivoTexto">Texto de la conversacion:</label>
         <input type="file" id="archivoTexto" accept=".txt" style="width: -webkit-fill-available;">
+        
+        <label for="archivosMultimedia">Archivos Multimedia (imagenes):</label>
+        <input type="file" id="archivosMultimedia" multiple style="width: -webkit-fill-available">
+        
         <br>
         <span id="hash" class="hash" onclick="cambiaHash()" style="display:none"></span><br>
         Mostrar mensajes<br>
@@ -81,6 +86,7 @@
     </div>
     <script>
         const dias_semana = ['Domingo', 'Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado'];
+        let imageDictionary = {};
         let mensajes = [];
         let usuarios = {};
         let conversacion = document.getElementById('contenedor');
@@ -123,6 +129,34 @@
             let tipo = checksums[indice];
             globo.innerHTML = tipo + ' Hash: <strong>' + hash[tipo]+'</strong><br>';
             
+        }
+
+
+        function loadImages() {
+            let input = document.getElementById('archivosMultimedia');
+            imageDictionary = {};
+
+            var files = input.files;
+
+            // Recorrer los archivos y leerlos como URL de datos
+            for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+
+                // Crear un objeto de archivo de imagen
+                var reader = new FileReader();
+
+                // Definir la función de carga del lector de archivos
+                reader.onload = (function (file) {
+                return function (e) {
+                    // Agregar el nombre del archivo y la imagen al diccionario
+                    imageDictionary[file.name] = e.target.result;
+                };
+                })(file);
+
+                // Leer el archivo de imagen como URL de datos
+                reader.readAsDataURL(file);
+            }
+
         }
 
         // Función para cargar el contenido del archivo de texto seleccionado
@@ -222,7 +256,18 @@
                 message.innerHTML = mensaje.mensaje;
                 globo.setAttribute('class', 'globo globo' + usuarios[mensaje.usuario]);
                 globo.setAttribute('onclick', 'toggleBlur(this)');
-
+                let msg = mensaje.mensaje.trim();
+                if (msg.match(/(IMG-\d{8}-WA\d{4})(\.jpg)?(\(archivo adjunto\))?/)) {
+                    
+                    let imageName = RegExp.$1 + '.jpg';
+                    
+                    let imageSrc = imageDictionary[imageName];
+                    if (imageSrc) {
+                        let img = document.createElement('img');
+                        img.src = imageSrc;
+                        globo.appendChild(img);
+                    }
+                }
                 globo.appendChild(user);
                 globo.appendChild(message);
                 globo.appendChild(metadato);
@@ -235,7 +280,7 @@
         }
 
         function toggleBlur(element) {
-            if (element.style.filter === 'blur(3px)') {
+            if (element.style.filter === 'blur(30px)') {
                 if (window.confirm("Esta seguro que desea ver este mensaje?")){
                     element.style.filter = 'blur(0px)';
                 }
@@ -245,6 +290,7 @@
         }
 
         document.getElementById('archivoTexto').addEventListener('change', cargarArchivoTexto);
+        document.getElementById('archivosMultimedia').addEventListener('change', loadImages);
         document.getElementById('usuarioA').addEventListener('change', function() {
             const selectedUser = this.value;
             usuarios[selectedUser] = 'A';
@@ -254,7 +300,7 @@
                     usuarios[usuario] = 'B';
                 }
             });
-
+            
             mostrarConversacion();
         });
     </script>
