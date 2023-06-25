@@ -9,7 +9,7 @@ You can import a chat text from whatsapp app and define a range of time. Then yo
 When the file is loaded a hash is calculated so you can check the integrity of the original conversation. All the code is in javascript so it's visible for anyone to check its behavior. The hash can be changed from MD5, to SHA-1 and SHA-256 just by click in it.
 
 ## Limitations
-This version only accepts text-only exports. In the future, the ability to include multimedia files and their respective hashes will be added.
+This version supports the possibility of uploading JPG image files as they come by default in whatsapp conversations. For this you must use the second input box where multiple JPG files are allowed to be loaded.
 
 ### Contact
 e-mail: jmgomezdev@gmail.com
