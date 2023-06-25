@@ -91,6 +91,7 @@
             calculateHash(file,'MD5');
             mensajes = [];
             usuarios = {};
+            document.getElementById('hash').style.display = 'block';
             document.getElementById('usuarioA').innerHTML = '<option value="" disabled selected>Elija un usuario</option>';
             document.getElementById('contenedor').innerHTML = "";
         });
@@ -100,7 +101,6 @@
             indice++;
             indice = indice % checksums.length;
             let tipo = checksums[indice];
-            globo.style.display = 'block';
             globo.innerHTML = tipo + ' Hash: <strong>' + hash[tipo]+'</strong><br>';
             
         }
