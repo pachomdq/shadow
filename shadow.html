@@ -47,6 +47,17 @@
             justify-content: center;
             align-items: center;
         }
+        .globito {
+            justify-content: center;
+            display: flex;
+            flex-direction: row;
+            background-color: #0a655c;
+            padding: 5px;
+            margin: 50px 10px 10px 10px;
+            border-radius: 10px;
+            color: white;
+        }
+
     </style>
 </head>
 
@@ -196,7 +207,9 @@
                 if (dia !== dia_actual){
                     let globito = document.createElement('div');
                     globito.innerHTML = dia_actual;
+                    globito.setAttribute('class', 'globito');
                     conversacion.appendChild(globito);
+
                     dia = dia_actual;
                 }
                 let globo = document.createElement('div');
