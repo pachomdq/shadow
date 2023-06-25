@@ -213,14 +213,17 @@
                 }
                 let globo = document.createElement('div');
                 let metadato = document.createElement('h5');
+                let user = document.createElement('p');
                 let message = document.createElement('p');
 
                 metadato.innerHTML = mensaje.hora;
                 metadato.style.textAlign = 'right';
-                message.innerHTML = '<strong>' + mensaje.usuario + '</strong><br>' + mensaje.mensaje;
+                user.innerHTML = '<strong>' + mensaje.usuario + '</strong>';
+                message.innerHTML = mensaje.mensaje;
                 globo.setAttribute('class', 'globo globo' + usuarios[mensaje.usuario]);
                 globo.setAttribute('onclick', 'toggleBlur(this)');
 
+                globo.appendChild(user);
                 globo.appendChild(message);
                 globo.appendChild(metadato);
                 conversacion.appendChild(globo);
