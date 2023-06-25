@@ -82,7 +82,7 @@
             </select>
     </div>
     <div class="principal">
-        <div id="contenedor" style="width: 80%;padding: 10px;border-style: solid;border-radius: 20px;background-color: #00000073;"></div>
+        <div id="contenedor" style="width: 80%;padding: 10px;border-style: solid;border-radius: 20px;background-color: #00000073;display:none;"></div>
     </div>
     <script>
         const dias_semana = ['Domingo', 'Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado'];
@@ -292,12 +292,12 @@
                     element.style.filter = 'blur(20px)';
                 }
             } else {
-                if (element.style.filter === 'blur(3px)') {
+                if (element.style.filter === 'blur(5px)') {
                     if (window.confirm("¿Estás seguro de que deseas ver este mensaje de texto?")) {
                         element.style.filter = 'blur(0px)';
                     }
                 } else {
-                    element.style.filter = 'blur(3px)';
+                    element.style.filter = 'blur(5px)';
                 }
             }
         }
@@ -313,7 +313,7 @@
                     usuarios[usuario] = 'B';
                 }
             });
-            
+            document.getElementById('contenedor').style.display = 'block'            
             mostrarConversacion();
         });
     </script>
