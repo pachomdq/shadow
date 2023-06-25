@@ -1,0 +1,664 @@
+<<<<<<< HEAD
+<html>
+<head>
+    <style>
+        .globo {
+            font-family: monospace;
+            padding: 3px;
+            margin-top: 5px;
+            width: 40%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .globoB {
+            background-color: white;
+            border-radius: 0px 10px 10px 10px;
+        }
+
+        .globoA {
+            border-radius: 10px 0px 10px 10px;
+            background-color: #d9fdd3;
+            text-align: right;
+            margin-left: 50%;
+        }
+        .hash{
+            border-radius: 5px;
+            background-color: darkslategrey;
+            color:white;
+            position:fixed;
+            padding:2px;
+            top:10;
+            width: -webkit-fill-available;
+            text-align: center;
+            z-index: 9999;
+        }
+        .cabecera
+        {
+            background-color: #28a98d6b;
+            padding: 20px;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+
+<body style="background-image: url(fondo.png);font-family: Segoe UI,Helvetica Neue,Helvetica,Lucida Grande,Arial,Ubuntu,Cantarell,Fira Sans,sans-serif;">
+<script src="crypto-js.js"></script>
+    <div class="cabecera">
+        <h2>Shadow v1.0</h2>
+        <input type="file" id="archivoTexto" accept=".txt">
+        <br>
+        <span id="hash" class="hash" onclick="cambiaHash()"></span><br>
+        Mostrar mensajes<br>
+        Desde: <input type="datetime-local" id="desde" onchange="mostrarConversacion()"><br>
+        Hasta: <input type="datetime-local" id="hasta" onchange="mostrarConversacion()"><br> 
+
+        Usuario del telefono: 
+            <select id="usuarioA">
+                <option value="" disabled selected>Elija un usuario</option>
+            </select>
+    </div>
+    <div id="contenedor"></div>
+
+    <script>
+        let mensajes = [];
+        let usuarios = {};
+        let conversacion = document.getElementById('contenedor');
+        let checksums = ['MD5', 'SHA-1', 'SHA-256'];
+        let hash ={};
+        function calculateHash(file, tipo) {
+            const reader = new FileReader();
+
+            reader.onload = function () {
+            const wordArray = CryptoJS.lib.WordArray.create(reader.result); // Crea un objeto WordArray a partir del contenido del archivo
+            hash['MD5'] = CryptoJS.MD5(wordArray).toString();
+            hash['SHA-1'] = CryptoJS.SHA1(wordArray).toString();
+            hash['SHA-256'] = CryptoJS.SHA256(wordArray).toString();
+
+            document.getElementById('hash').innerHTML = tipo + ' Hash: <strong>' + hash[tipo]+'</strong><br>';
+            };
+
+            reader.onerror = function (error) {
+            console.error('Error al leer el archivo:', error);
+            };
+
+            reader.readAsArrayBuffer(file); // Lee el archivo como un búfer de bytes
+        }
+
+        // Manejador de evento para el cambio de archivo
+        document.getElementById('archivoTexto').addEventListener('change', function (event) {
+            const file = event.target.files[0]; // Obtiene el archivo cargado
+            calculateHash(file,'MD5');
+            mensajes = [];
+            usuarios = {};
+            document.getElementById('usuarioA').innerHTML = '<option value="" disabled selected>Elija un usuario</option>';
+            document.getElementById('contenedor').innerHTML = "";
+        });
+        let indice = 0;
+        function cambiaHash(){
+            indice++;
+            indice = indice % checksums.length;
+            let tipo = checksums[indice];
+            document.getElementById('hash').innerHTML = tipo + ' Hash: <strong>' + hash[tipo]+'</strong><br>';
+            
+        }
+
+        // Función para cargar el contenido del archivo de texto seleccionado
+        function cargarArchivoTexto() {
+            const archivo = document.getElementById('archivoTexto').files[0];
+            const lector = new FileReader();
+
+            lector.onload = function(evento) {
+                // Reiniciar mensajes y usuarios cada vez que se carga un nuevo archivo
+                mensajes = [];
+                usuarios = {};
+                const contenido = evento.target.result;
+                procesarMensajes(contenido);
+            };
+
+            lector.readAsText(archivo);
+        }
+
+        // Función para procesar los mensajes del archivo de texto
+        function procesarMensajes(texto) {
+            // Resto del código para procesar los mensajes
+            const regex = /(\d{1,2}\/\d{1,2}\/\d{2})\s(\d{2}:\d{2})\s-\s([a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+):\s([\s\S]+?(?=\n\d{1,2}\/|\n$))/g;
+            let match;
+            let contador = 0;
+
+            while ((match = regex.exec(texto)) !== null) {
+                const fecha = match[1];
+                const hora = match[2];
+                const usuario = match[3];
+                // hay que escapar los signos de mayor y menor para que no se conviertan en tags html
+                const mensaje = match[4].trim().replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+                
+                const [dia, mes, anio] = fecha.split('/');
+                const [horaStr, minutosStr] = hora.split(':');
+
+                // Ajusta los componentes de fecha para que estén en formato "mm/dd/aaaa"
+                const fechaFormateada = `${mes}/${dia}/${anio}`;
+
+                // Crea un nuevo objeto Date con la fecha y hora
+                const dfecha = new Date(`${fechaFormateada} ${horaStr}:${minutosStr}`);
+
+                let tipo = "";
+                if (!usuarios.hasOwnProperty(usuario)) {
+                    tipo = contador === 0 ? 'A' : 'B';
+                    usuarios[usuario] = tipo;
+
+                    let opcion = document.createElement('option');
+                    opcion.setAttribute('value', usuario);
+                    opcion.innerHTML = usuario;
+                    document.getElementById('usuarioA').appendChild(opcion);
+
+                    contador++;
+                } else {
+                    tipo = usuarios[usuario];
+                }
+
+                mensajes.push({ dfecha, fecha, hora, usuario, mensaje });
+            }
+            //mostrarConversacion();
+            document.getElementById('desde').value = (new Date(mensajes[0].dfecha.getTime() - mensajes[0].dfecha.getTimezoneOffset() * 60000)).toISOString().slice(0, -1);
+            document.getElementById('hasta').value = (new Date(mensajes[mensajes.length - 1].dfecha.getTime() - mensajes[mensajes.length - 1].dfecha.getTimezoneOffset() * 60000)).toISOString().slice(0, -1);
+
+            //const primerMensaje = mensajes[0].dfecha;
+            //const ultimoMensaje = mensajes[mensajes.length - 1].dfecha;
+
+        }
+
+        function mostrarConversacion() {
+            conversacion.innerHTML = '';
+            let d = new Date(document.getElementById('desde').value)
+            let h = new Date(document.getElementById('hasta').value)
+            let timezoneOffset = d.getTimezoneOffset();
+            d.setMinutes(d.getMinutes() + timezoneOffset);
+            h.setMinutes(h.getMinutes() + timezoneOffset);
+            
+            mensajes.forEach(mensaje => {
+
+                let globo = document.createElement('div');
+                let metadato = document.createElement('h6');
+                let message = document.createElement('p');
+
+                metadato.innerHTML = mensaje.fecha + ' ' + mensaje.hora + ' (' + mensaje.dfecha.toString() + ')';
+                message.innerHTML = '<strong>' + mensaje.usuario + '</strong><br>' + mensaje.mensaje;
+                globo.setAttribute('class', 'globo globo' + usuarios[mensaje.usuario]);
+                globo.setAttribute('onclick', 'toggleBlur(this)');
+
+                globo.appendChild(message);
+                globo.appendChild(metadato);
+                conversacion.appendChild(globo);
+                let mensajeFechaOffset = new Date(mensaje.dfecha.getTime() + mensaje.dfecha.getTimezoneOffset() * 60000);
+                if (mensajeFechaOffset < d || mensajeFechaOffset > h){
+                    toggleBlur(globo);
+                }     
+            });
+        }
+
+        function toggleBlur(element) {
+            if (element.style.filter === 'blur(3px)') {
+                if (window.confirm("Esta seguro que desea ver este mensaje?")){
+                    element.style.filter = 'blur(0px)';
+                }
+            } else {
+                element.style.filter = 'blur(3px)';
+            }
+        }
+
+        document.getElementById('archivoTexto').addEventListener('change', cargarArchivoTexto);
+        document.getElementById('usuarioA').addEventListener('change', function() {
+            const selectedUser = this.value;
+            usuarios[selectedUser] = 'A';
+
+            Object.keys(usuarios).forEach(usuario => {
+                if (usuario !== selectedUser) {
+                    usuarios[usuario] = 'B';
+                }
+            });
+
+            mostrarConversacion();
+        });
+    </script>
+</body>
+</html>
+=======
+<<<<<<< HEAD
+<html>
+<head>
+    <style>
+        .globo {
+            border-radius: 10px;
+            font-family: monospace;
+            padding: 3px;
+            margin-top: 5px;
+            width: 40%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .globoB {
+            background-color: white;
+        }
+
+        .globoA {
+            background-color: #d9fdd3;
+            text-align: right;
+            margin-left: 50%;
+        }
+        .hash{
+            border-radius: 5px;
+            background-color: darkslategrey;
+            color:white;
+            position:fixed;
+            padding:2px;
+            top:10;
+            left:300;
+            z-index: 9999;
+        }
+    </style>
+</head>
+
+<body style="background-image: url(fondo.png);font-family: Segoe UI,Helvetica Neue,Helvetica,Lucida Grande,Arial,Ubuntu,Cantarell,Fira Sans,sans-serif;">
+<script src="crypto-js.js"></script>
+    <input type="file" id="archivoTexto" accept=".txt">
+    <br>
+    <span id="hash" class="hash" onclick="cambiaHash()"></span><br>
+    Mostrar mensajes<br>
+    Desde: <input type="datetime-local" id="desde" onchange="mostrarConversacion()"><br>
+    Hasta: <input type="datetime-local" id="hasta" onchange="mostrarConversacion()"><br> 
+
+    Usuario del telefono: 
+        <select id="usuarioA">
+            <option value="" disabled selected>Elija un usuario</option>
+        </select>
+    <div id="contenedor"></div>
+
+    <script>
+        let mensajes = [];
+        let usuarios = {};
+        let conversacion = document.getElementById('contenedor');
+        let checksums = ['MD5', 'SHA-1', 'SHA-256'];
+        let hash ={};
+        function calculateHash(file, tipo) {
+            const reader = new FileReader();
+
+            reader.onload = function () {
+            const wordArray = CryptoJS.lib.WordArray.create(reader.result); // Crea un objeto WordArray a partir del contenido del archivo
+            hash['MD5'] = CryptoJS.MD5(wordArray).toString();
+            hash['SHA-1'] = CryptoJS.SHA1(wordArray).toString();
+            hash['SHA-256'] = CryptoJS.SHA256(wordArray).toString();
+
+            document.getElementById('hash').innerHTML = tipo + ' Hash: <strong>' + hash[tipo]+'</strong><br>';
+            };
+
+            reader.onerror = function (error) {
+            console.error('Error al leer el archivo:', error);
+            };
+
+            reader.readAsArrayBuffer(file); // Lee el archivo como un búfer de bytes
+        }
+
+        // Manejador de evento para el cambio de archivo
+        document.getElementById('archivoTexto').addEventListener('change', function (event) {
+            const file = event.target.files[0]; // Obtiene el archivo cargado
+            mensajes = [];
+            usuarios = {};
+            calculateHash(file,'MD5');
+        });
+        let indice = 0;
+        function cambiaHash(){
+            indice++;
+            indice = indice % checksums.length;
+            let tipo = checksums[indice];
+            document.getElementById('hash').innerHTML = tipo + ' Hash: <strong>' + hash[tipo]+'</strong><br>';
+            
+        }
+
+        // Función para cargar el contenido del archivo de texto seleccionado
+        function cargarArchivoTexto() {
+            const archivo = document.getElementById('archivoTexto').files[0];
+            const lector = new FileReader();
+
+            lector.onload = function(evento) {
+                // Reiniciar mensajes y usuarios cada vez que se carga un nuevo archivo
+                mensajes = [];
+                usuarios = {};
+                const contenido = evento.target.result;
+                procesarMensajes(contenido);
+            };
+
+            lector.readAsText(archivo);
+        }
+
+        // Función para procesar los mensajes del archivo de texto
+        function procesarMensajes(texto) {
+            // Resto del código para procesar los mensajes
+            const regex = /(\d{1,2}\/\d{1,2}\/\d{2})\s(\d{2}:\d{2})\s-\s([a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+):\s([\s\S]+?(?=\n\d{1,2}\/|\n$))/g;
+            let match;
+            let contador = 0;
+
+            while ((match = regex.exec(texto)) !== null) {
+                const fecha = match[1];
+                const hora = match[2];
+                const usuario = match[3];
+                // hay que escapar los signos de mayor y menor para que no se conviertan en tags html
+                const mensaje = match[4].trim().replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+                
+                const [dia, mes, anio] = fecha.split('/');
+                const [horaStr, minutosStr] = hora.split(':');
+
+                // Ajusta los componentes de fecha para que estén en formato "mm/dd/aaaa"
+                const fechaFormateada = `${mes}/${dia}/${anio}`;
+
+                // Crea un nuevo objeto Date con la fecha y hora
+                const dfecha = new Date(`${fechaFormateada} ${horaStr}:${minutosStr}`);
+
+                let tipo = "";
+                if (!usuarios.hasOwnProperty(usuario)) {
+                    tipo = contador === 0 ? 'A' : 'B';
+                    usuarios[usuario] = tipo;
+
+                    let opcion = document.createElement('option');
+                    opcion.setAttribute('value', usuario);
+                    opcion.innerHTML = usuario;
+                    document.getElementById('usuarioA').appendChild(opcion);
+
+                    contador++;
+                } else {
+                    tipo = usuarios[usuario];
+                }
+
+                mensajes.push({ dfecha, fecha, hora, usuario, mensaje });
+            }
+            //mostrarConversacion();
+            document.getElementById('desde').value = (new Date(mensajes[0].dfecha.getTime() - mensajes[0].dfecha.getTimezoneOffset() * 60000)).toISOString().slice(0, -1);
+            document.getElementById('hasta').value = (new Date(mensajes[mensajes.length - 1].dfecha.getTime() - mensajes[mensajes.length - 1].dfecha.getTimezoneOffset() * 60000)).toISOString().slice(0, -1);
+
+            //const primerMensaje = mensajes[0].dfecha;
+            //const ultimoMensaje = mensajes[mensajes.length - 1].dfecha;
+
+        }
+
+        function mostrarConversacion() {
+            conversacion.innerHTML = '';
+            let d = new Date(document.getElementById('desde').value)
+            let h = new Date(document.getElementById('hasta').value)
+            let timezoneOffset = d.getTimezoneOffset();
+            d.setMinutes(d.getMinutes() + timezoneOffset);
+            h.setMinutes(h.getMinutes() + timezoneOffset);
+            
+            mensajes.forEach(mensaje => {
+
+                let globo = document.createElement('div');
+                let metadato = document.createElement('h6');
+                let message = document.createElement('p');
+
+                metadato.innerHTML = mensaje.fecha + ' ' + mensaje.hora + ' (' + mensaje.dfecha.toString() + ')';
+                message.innerHTML = '<strong>' + mensaje.usuario + '</strong><br>' + mensaje.mensaje;
+                globo.setAttribute('class', 'globo globo' + usuarios[mensaje.usuario]);
+                globo.setAttribute('onclick', 'toggleBlur(this)');
+
+                globo.appendChild(message);
+                globo.appendChild(metadato);
+                conversacion.appendChild(globo);
+                let mensajeFechaOffset = new Date(mensaje.dfecha.getTime() + mensaje.dfecha.getTimezoneOffset() * 60000);
+                if (mensajeFechaOffset < d || mensajeFechaOffset > h){
+                    toggleBlur(globo);
+                }     
+            });
+        }
+
+        function toggleBlur(element) {
+            if (element.style.filter === 'blur(3px)') {
+                if (window.confirm("Esta seguro que desea ver este mensaje?")){
+                    element.style.filter = 'blur(0px)';
+                }
+            } else {
+                element.style.filter = 'blur(3px)';
+            }
+        }
+
+        document.getElementById('archivoTexto').addEventListener('change', cargarArchivoTexto);
+        document.getElementById('usuarioA').addEventListener('change', function() {
+            const selectedUser = this.value;
+            usuarios[selectedUser] = 'A';
+
+            Object.keys(usuarios).forEach(usuario => {
+                if (usuario !== selectedUser) {
+                    usuarios[usuario] = 'B';
+                }
+            });
+
+            mostrarConversacion();
+        });
+    </script>
+</body>
+</html>
+=======
+<html>
+<head>
+    <style>
+        .globo {
+            font-family: monospace;
+            padding: 3px;
+            margin-top: 5px;
+            width: 40%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .globoB {
+            background-color: white;
+            border-radius: 0px 10px 10px 10px;
+        }
+
+        .globoA {
+            border-radius: 10px 0px 10px 10px;
+            background-color: #d9fdd3;
+            text-align: right;
+            margin-left: 50%;
+        }
+        .hash{
+            border-radius: 5px;
+            background-color: darkslategrey;
+            color:white;
+            position:fixed;
+            padding:2px;
+            top:10;
+            left:300;
+            z-index: 9999;
+        }
+        .cabecera
+        {
+            background-color: #28a98d6b;
+            padding: 20px;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+
+<body style="background-image: url(fondo.png);font-family: Segoe UI,Helvetica Neue,Helvetica,Lucida Grande,Arial,Ubuntu,Cantarell,Fira Sans,sans-serif;">
+<script src="crypto-js.js"></script>
+    <div class="cabecera">
+        <h2>Shadow v1.0</h2>
+        <input type="file" id="archivoTexto" accept=".txt">
+        <br>
+        <span id="hash" class="hash" onclick="cambiaHash()"></span><br>
+        Mostrar mensajes<br>
+        Desde: <input type="datetime-local" id="desde" onchange="mostrarConversacion()"><br>
+        Hasta: <input type="datetime-local" id="hasta" onchange="mostrarConversacion()"><br> 
+
+        Usuario del telefono: 
+            <select id="usuarioA">
+                <option value="" disabled selected>Elija un usuario</option>
+            </select>
+    </div>
+    <div id="contenedor"></div>
+
+    <script>
+        let mensajes = [];
+        let usuarios = {};
+        let conversacion = document.getElementById('contenedor');
+        let checksums = ['MD5', 'SHA-1', 'SHA-256'];
+        let hash ={};
+        function calculateHash(file, tipo) {
+            const reader = new FileReader();
+
+            reader.onload = function () {
+            const wordArray = CryptoJS.lib.WordArray.create(reader.result); // Crea un objeto WordArray a partir del contenido del archivo
+            hash['MD5'] = CryptoJS.MD5(wordArray).toString();
+            hash['SHA-1'] = CryptoJS.SHA1(wordArray).toString();
+            hash['SHA-256'] = CryptoJS.SHA256(wordArray).toString();
+
+            document.getElementById('hash').innerHTML = tipo + ' Hash: <strong>' + hash[tipo]+'</strong><br>';
+            };
+
+            reader.onerror = function (error) {
+            console.error('Error al leer el archivo:', error);
+            };
+
+            reader.readAsArrayBuffer(file); // Lee el archivo como un búfer de bytes
+        }
+
+        // Manejador de evento para el cambio de archivo
+        document.getElementById('archivoTexto').addEventListener('change', function (event) {
+            const file = event.target.files[0]; // Obtiene el archivo cargado
+            calculateHash(file,'MD5');
+            mensajes = [];
+            usuarios = {};
+            document.getElementById('usuarioA').innerHTML = '<option value="" disabled selected>Elija un usuario</option>';
+            document.getElementById('contenedor').innerHTML = "";
+        });
+        let indice = 0;
+        function cambiaHash(){
+            indice++;
+            indice = indice % checksums.length;
+            let tipo = checksums[indice];
+            document.getElementById('hash').innerHTML = tipo + ' Hash: <strong>' + hash[tipo]+'</strong><br>';
+            
+        }
+
+        // Función para cargar el contenido del archivo de texto seleccionado
+        function cargarArchivoTexto() {
+            const archivo = document.getElementById('archivoTexto').files[0];
+            const lector = new FileReader();
+
+            lector.onload = function(evento) {
+                // Reiniciar mensajes y usuarios cada vez que se carga un nuevo archivo
+                mensajes = [];
+                usuarios = {};
+                const contenido = evento.target.result;
+                procesarMensajes(contenido);
+            };
+
+            lector.readAsText(archivo);
+        }
+
+        // Función para procesar los mensajes del archivo de texto
+        function procesarMensajes(texto) {
+            // Resto del código para procesar los mensajes
+            const regex = /(\d{1,2}\/\d{1,2}\/\d{2})\s(\d{2}:\d{2})\s-\s([a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+):\s([\s\S]+?(?=\n\d{1,2}\/|\n$))/g;
+            let match;
+            let contador = 0;
+
+            while ((match = regex.exec(texto)) !== null) {
+                const fecha = match[1];
+                const hora = match[2];
+                const usuario = match[3];
+                // hay que escapar los signos de mayor y menor para que no se conviertan en tags html
+                const mensaje = match[4].trim().replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+                
+                const [dia, mes, anio] = fecha.split('/');
+                const [horaStr, minutosStr] = hora.split(':');
+
+                // Ajusta los componentes de fecha para que estén en formato "mm/dd/aaaa"
+                const fechaFormateada = `${mes}/${dia}/${anio}`;
+
+                // Crea un nuevo objeto Date con la fecha y hora
+                const dfecha = new Date(`${fechaFormateada} ${horaStr}:${minutosStr}`);
+
+                let tipo = "";
+                if (!usuarios.hasOwnProperty(usuario)) {
+                    tipo = contador === 0 ? 'A' : 'B';
+                    usuarios[usuario] = tipo;
+
+                    let opcion = document.createElement('option');
+                    opcion.setAttribute('value', usuario);
+                    opcion.innerHTML = usuario;
+                    document.getElementById('usuarioA').appendChild(opcion);
+
+                    contador++;
+                } else {
+                    tipo = usuarios[usuario];
+                }
+
+                mensajes.push({ dfecha, fecha, hora, usuario, mensaje });
+            }
+            //mostrarConversacion();
+            document.getElementById('desde').value = (new Date(mensajes[0].dfecha.getTime() - mensajes[0].dfecha.getTimezoneOffset() * 60000)).toISOString().slice(0, -1);
+            document.getElementById('hasta').value = (new Date(mensajes[mensajes.length - 1].dfecha.getTime() - mensajes[mensajes.length - 1].dfecha.getTimezoneOffset() * 60000)).toISOString().slice(0, -1);
+
+            //const primerMensaje = mensajes[0].dfecha;
+            //const ultimoMensaje = mensajes[mensajes.length - 1].dfecha;
+
+        }
+
+        function mostrarConversacion() {
+            conversacion.innerHTML = '';
+            let d = new Date(document.getElementById('desde').value)
+            let h = new Date(document.getElementById('hasta').value)
+            let timezoneOffset = d.getTimezoneOffset();
+            d.setMinutes(d.getMinutes() + timezoneOffset);
+            h.setMinutes(h.getMinutes() + timezoneOffset);
+            
+            mensajes.forEach(mensaje => {
+
+                let globo = document.createElement('div');
+                let metadato = document.createElement('h6');
+                let message = document.createElement('p');
+
+                metadato.innerHTML = mensaje.fecha + ' ' + mensaje.hora + ' (' + mensaje.dfecha.toString() + ')';
+                message.innerHTML = '<strong>' + mensaje.usuario + '</strong><br>' + mensaje.mensaje;
+                globo.setAttribute('class', 'globo globo' + usuarios[mensaje.usuario]);
+                globo.setAttribute('onclick', 'toggleBlur(this)');
+
+                globo.appendChild(message);
+                globo.appendChild(metadato);
+                conversacion.appendChild(globo);
+                let mensajeFechaOffset = new Date(mensaje.dfecha.getTime() + mensaje.dfecha.getTimezoneOffset() * 60000);
+                if (mensajeFechaOffset < d || mensajeFechaOffset > h){
+                    toggleBlur(globo);
+                }     
+            });
+        }
+
+        function toggleBlur(element) {
+            if (element.style.filter === 'blur(3px)') {
+                if (window.confirm("Esta seguro que desea ver este mensaje?")){
+                    element.style.filter = 'blur(0px)';
+                }
+            } else {
+                element.style.filter = 'blur(3px)';
+            }
+        }
+
+        document.getElementById('archivoTexto').addEventListener('change', cargarArchivoTexto);
+        document.getElementById('usuarioA').addEventListener('change', function() {
+            const selectedUser = this.value;
+            usuarios[selectedUser] = 'A';
+
+            Object.keys(usuarios).forEach(usuario => {
+                if (usuario !== selectedUser) {
+                    usuarios[usuario] = 'B';
+                }
+            });
+
+            mostrarConversacion();
+        });
+    </script>
+</body>
+</html>
+>>>>>>> 6ffacac89c16452d42c4adb5d461498e91eacf83
+>>>>>>> dca742386aa6624fe27978896adabb80623e7acf
