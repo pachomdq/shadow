@@ -216,7 +216,7 @@
                 let metadato = document.createElement('h6');
                 let message = document.createElement('p');
 
-                metadato.innerHTML = mensaje.fecha + ' ' + mensaje.hora + ' (' + mensaje.dfecha.toString() + ')';
+                metadato.innerHTML = mensaje.hora;
                 message.innerHTML = '<strong>' + mensaje.usuario + '</strong><br>' + mensaje.mensaje;
                 globo.setAttribute('class', 'globo globo' + usuarios[mensaje.usuario]);
                 globo.setAttribute('onclick', 'toggleBlur(this)');
